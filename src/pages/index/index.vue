@@ -1,13 +1,6 @@
 <template>
   <div>
-    <!-- 搜索 -->
-    <div class="search">
-      <div class="input-box">
-        <input type="text" placeholder="请输入商品" >
-      </div>
-      <!-- 搜索结果 -->
-      <div class="result"></div>
-    </div>
+    <search></search>
     <!-- 轮播图 -->
     <swiper class="banner" indicator-dots indicator-color="rgba(255,255,255,0.6)" indicator-active-color="#fff">
       <swiper-item :key="key" v-for="(list, key) in bannerList">
@@ -42,6 +35,7 @@
 
 <script>
 import request from '@/utils/request'
+import search from '@/components/search'
 
 export default {
   data () {
@@ -90,6 +84,9 @@ export default {
     this.getNavs()
     this.getFloors()
     mpvue.stopPullDownRefresh()
+  },
+  components: {
+    search
   }
 }
 </script>
