@@ -1,125 +1,186 @@
 <template>
-  <div @click="clickHandle">
-
-    <div class="userinfo" @click="bindViewTap">
-      <img class="userinfo-avatar" v-if="userInfo.avatarUrl" :src="userInfo.avatarUrl" background-size="cover" />
-      <img class="userinfo-avatar" src="/static/images/user.png" background-size="cover" />
-
-      <div class="userinfo-nickname">
-        <card :text="userInfo.nickName"></card>
+  <div>
+    <!-- 搜索 -->
+    <div class="search">
+      <div class="input-box">
+        <input type="text" placeholder="请输入商品" >
+      </div>
+      <!-- 搜索结果 -->
+      <div class="result"></div>
+    </div>
+    <!-- 轮播图 -->
+    <swiper class="banner" indicator-dots indicator-color="rgba(255,255,255,0.6)" indicator-active-color="#fff">
+      <swiper-item :key="key" v-for="(list, key) in bannerList">
+        <navigator :url="list.navigator_url">
+          <image :src="list.image_src"></image>
+        </navigator>
+      </swiper-item>
+    </swiper>
+    <!-- 导航 -->
+    <div class="navs">
+      <navigator :key="key" :url="list.navigator_url" v-for="(list, key) in navList">
+        <image :src="list.image_src"></image>
+      </navigator>
+    </div>
+    <!-- 楼层 -->
+    <div class="floors">
+      <div class="floor" v-for="(list, key) in floorsList" :key="key">
+        <div class="title">
+          <image :src="list.floor_title.image_src"></image>
+        </div>
+        <div class="pics">
+          <navigator v-for="(item, index) in list.product_list" :key="index" :url="item.navigator_url">
+            <image :src="item.image_src"></image>
+          </navigator>
+        </div>
       </div>
     </div>
-
-    <div class="usermotto">
-      <div class="user-motto">
-        <card :text="motto"></card>
-      </div>
-    </div>
-
-    <form class="form-container">
-      <input type="text" class="form-control" :value="motto" placeholder="v-model" />
-      <input type="text" class="form-control" v-model="motto" placeholder="v-model" />
-      <input type="text" class="form-control" v-model.lazy="motto" placeholder="v-model.lazy" />
-    </form>
-
-
-    <div class="all">
-        <div class="left">
-        </div>
-        <div class="right">
-        </div>
-    </div>
+    <!-- 回顶部 -->
+    <span class="gotop" @click="goTop" v-show="!isTop"></span>
   </div>
 </template>
 
 <script>
-import card from '@/components/card'
+import request from '@/utils/request'
 
 export default {
   data () {
     return {
-      motto: 'Hello miniprograme',
-      userInfo: {
-        nickName: 'mpvue',
-        avatarUrl: 'http://mpvue.com/assets/logo.png'
-      }
+      bannerList: [],
+      navList: [],
+      floorsList: [],
+      isTop: true
     }
   },
-
-  components: {
-    card
-  },
-
   methods: {
-    bindViewTap () {
-      const url = '../logs/main'
-      if (mpvuePlatform === 'wx') {
-        mpvue.switchTab({ url })
-      } else {
-        mpvue.navigateTo({ url })
-      }
+    async getBanner () {
+      let {message} = await request({
+        url: '/api/public/v1/home/swiperdata'
+      })
+      this.bannerList = message
     },
-    clickHandle (ev) {
-      console.log('clickHandle:', ev)
-      // throw {message: 'custom test'}
+    async getNavs () {
+      let {message} = await request({
+        url: '/api/public/v1/home/catitems'
+      })
+      this.navList = message
+    },
+    async getFloors () {
+      let {message} = await request({
+        url: '/api/public/v1/home/floordata'
+      })
+      this.floorsList = message
+    },
+    goTop () {
+      mpvue.pageScrollTo({
+        scrollTop: 100
+      })
     }
   },
-
   created () {
-    // let app = getApp()
+    this.getBanner()
+    this.getNavs()
+    this.getFloors()
+  },
+  onPageScroll (e) {
+    this.isTop = e.scrollTop < 200
+  },
+  onPullDownRefresh () {
+    this.getBanner()
+    this.getNavs()
+    this.getFloors()
+    mpvue.stopPullDownRefresh()
   }
 }
 </script>
 
-<style scoped>
-.userinfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+<style scoped lang="less">
+  .search {
+    .input-box {
+      background-color: #ea4451;
+      padding: 20rpx 30rpx;
 
-.userinfo-avatar {
-  width: 128rpx;
-  height: 128rpx;
-  margin: 20rpx;
-  border-radius: 50%;
-}
+      input {
+        height: 75rpx;
+        background-color: #fff;
+        padding-left: 15rpx;
+        border-radius: 8rpx;
+        font-size: 27rpx;
+        color: #666;
+      }
+    }
+  }
 
-.userinfo-nickname {
-  color: #aaa;
-}
+  // 轮播图
+  .banner {
+    width: 750rpx;
+    height: 340rpx;
 
-.usermotto {
-  margin-top: 150px;
-}
+    navigator {
+      width: 100%;
+      height: 100%;
+    }
+  }
 
-.form-control {
-  display: block;
-  padding: 0 12px;
-  margin-bottom: 5px;
-  border: 1px solid #ccc;
-}
-.all{
-  width:7.5rem;
-  height:1rem;
-  background-color:blue;
-}
-.all:after{
-  display:block;
-  content:'';
-  clear:both;
-}
-.left{
-  float:left;
-  width:3rem;
-  height:1rem;
-  background-color:red;
-}
+  // 导航
+  .navs {
+    display: flex;
+    justify-content: space-between;
+    padding: 30rpx 40rpx;
 
-.right{
-  float:left;
-  width:4.5rem;
-  height:1rem;
-  background-color:green;
-}
+    navigator {
+      width: 128rpx;
+      height: 140rpx;
+    }
+  }
+
+  // 楼层
+  .floors {
+    .title {
+      width: 750rpx;
+      height: 60rpx;
+      padding-top: 27rpx;
+      padding-left: 15rpx;
+      background-color: #f4f4f4;
+    }
+    .pics {
+      padding: 20rpx 18rpx;
+      overflow: hidden;
+
+      navigator {
+        height: 188rpx;
+        margin-left: 10rpx;
+        margin-bottom: 10rpx;
+        float: left;
+      }
+      navigator:first-child {
+        width: 232rpx;
+        height: 386rpx;
+        margin-left: 0;
+      }
+      navigator:nth-child(2) {
+        width: 273rpx;
+      }
+      navigator:nth-child(3) {
+        width: 193rpx;
+      }
+      navigator:nth-child(4) {
+        width: 193rpx;
+      }
+      navigator:last-child {
+        width: 273rpx;
+      }
+    }
+  }
+
+  // 回顶部
+  .gotop {
+    position: fixed;
+    bottom: 60rpx;
+    right: 30rpx;
+    width: 88rpx;
+    height: 88rpx;
+    border-radius: 50%;
+    background-color: hotpink;
+  }
 </style>

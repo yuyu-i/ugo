@@ -47,4 +47,9 @@ export default {
   -webkit-transition: width 2s;
   -o-transition: width 2s;
 }
+  image {
+    width: 100%;
+    height: 100%;
+    vertical-align: middle;
+  }
 </style>
